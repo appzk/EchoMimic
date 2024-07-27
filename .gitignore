@@ -2,3 +2,9 @@ ffmpeg-4.4-amd64-static
 pretrained_weights
 output
 __pycache__
+assets/test_audios/alay.wav
+assets/test_imgs/fuyu-4.jpg
+assets/test_imgs/fuyu-w2.jpg
+assets/test_imgs/seasong.png
+assets/test_pose_demo_audios/output.wav
+assets/test_imgs/screenshot-1715696605335.png
