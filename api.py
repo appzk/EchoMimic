@@ -123,8 +123,13 @@ def select_face(det_bboxes, probs):
 
 @app.post("/audio2vid/")
 async def convert_audio_to_video(request_data: Audio2VidRequest):
-    try:
+    # try:
         # 直接使用请求数据中的路径调用 audio2vid 函数
+        print(f"ref_image_path: {request_data.ref_image_path}")
+        print(f"audio_path: {request_data.audio_path}")
+        print(f"output_path: {request_data.output_path}")
+        print(f"seed: {request_data.seed}")
+        print(f"steps: {request_data.steps}")
         videoUrl = audio2vid(
             ref_image_path=request_data.ref_image_path,
             audio_path=request_data.audio_path,
@@ -134,11 +139,11 @@ async def convert_audio_to_video(request_data: Audio2VidRequest):
         )
         
         return {"message": "Conversion successful", "video_url": videoUrl}
-    except Exception as e:
-        # 如果 audio2vid 函数抛出异常，返回 HTTP 500 内部服务器错误
-        raise HTTPException(status_code=500, detail=str(e))
+    # except Exception as e:
+    #     # 如果 audio2vid 函数抛出异常，返回 HTTP 500 内部服务器错误
+    #     raise HTTPException(status_code=500, detail=str(e))
 
-def audio2vid(ref_image_path: str, audio_path: str, output_path: str, seed: int=2581, steps: int=10):
+def audio2vid(ref_image_path: str, audio_path: str, output_path: str, seed: int=2581, steps: int=20):
     
     print("audio2vid")
     args = parse_args()
@@ -230,14 +235,10 @@ def audio2vid(ref_image_path: str, audio_path: str, output_path: str, seed: int=
     date_str = datetime.now().strftime("%Y%m%d")
     time_str = datetime.now().strftime("%H%M")
     save_dir_name = f"{output_path}" # f"{time_str}--seed_{args.seed}-{args.W}x{args.H}"
-    save_dir = Path(f"output/{date_str}/{save_dir_name}")
+    # save_dir = Path(f"output/{date_str}/{save_dir_name}")
+    save_dir = Path(f"../output/{save_dir_name}/human")
     save_dir.mkdir(exist_ok=True, parents=True)
 
-    # for ref_image_path in config["test_cases"].keys():
-    # ref_image_path = "./assets/test_imgs/a.png"
-    audio_paths = ["./assets/test_audios/alay.wav", "./assets/test_audios/chunnuanhuakai.wav"]
-    # audio_path = "./assets/test_audios/alay.wav"
-    # for audio_path in audio_paths:
 
     if seed is not None and seed > -1:
         generator = torch.manual_seed(seed)
@@ -269,8 +270,8 @@ def audio2vid(ref_image_path: str, audio_path: str, output_path: str, seed: int=
         c_pad_crop = int((ce - cb) * args.facecrop_dilation_ratio)
         crop_rect = [max(0, cb - c_pad_crop), max(0, rb - r_pad_crop), min(ce + c_pad_crop, face_img.shape[1]), min(re + c_pad_crop, face_img.shape[0])]
         # print(crop_rect)
-        face_img = crop_and_pad(face_img, crop_rect)
-        face_mask = crop_and_pad(face_mask, crop_rect)
+        face_img, _ = crop_and_pad(face_img, crop_rect)
+        face_mask, _ = crop_and_pad(face_mask, crop_rect)
         face_img = cv2.resize(face_img, (args.W, args.H))
         face_mask = cv2.resize(face_mask, (args.W, args.H))
 
@@ -339,7 +340,7 @@ async def get_video(path: str):
     print(f"filename: {path}")
     # 解码 URL 路径
     decoded_path = unquote(path)
-    file_path = os.path.join(BASE_VIDEO_DIR, decoded_path)
+    file_path = os.path.join(decoded_path)
     print(f"file_path: {file_path}")
     # 检查文件是否存在
     if not os.path.isfile(file_path):
